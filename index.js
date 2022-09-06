@@ -18,22 +18,17 @@ connectDB();
 
 app.use(cors());
 
-async (req, res) => {
-  res.setHeader('Access-Control-Allow-Credentials', true)
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  // another common pattern
-  // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  )
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
-  }
-  return await fn(req, res)
-}
+app.use((req,res, next)=>{
+ 
+  res.header("Access-Control-Allow-Origin", "https://upay-sooty.vercel.app");
+res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
+res.header("Access-Control-Allow-Headers", req.header('access-control-request-headers'));
+res.setHeader('Access-Control-Allow-Origin',"*");
+res.setHeader('Access-Control-Allow-Headers',"*");
+res.header('Access-Control-Allow-Credentials', true);
+next();
+});
+
 // app.use(credentials);
 
 app.use(express.urlencoded({ extended: false }));
