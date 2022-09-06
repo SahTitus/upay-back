@@ -12,6 +12,9 @@
 # production
 /build
 
+node_modules
+.env
+
 .env
 
 # misc
