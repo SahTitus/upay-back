@@ -6,7 +6,6 @@ import bodyParser from "body-parser";
 import { connectDB } from "./config/connectDb.js";
 import dotenv from "dotenv";
 import credentials from "./middleware/credentials.js";
-// import postRoutes from "./routes/posts.js";
 import userRoutes from "./routes/users.js";
 
 
@@ -28,7 +27,6 @@ app.use(express.json());
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
-// app.use("/comments", commentRoutes);
 app.use("/user", userRoutes);
 
 mongoose.connection.once("open", () => {
