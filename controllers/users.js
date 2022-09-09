@@ -8,10 +8,27 @@ const secret = "test";
 
 export const getUsers = async (req, res) => {
   const users = await User.find();
+  // console.log(users)
   if (!users) {
     return res.status(204).json({ message: "No user found" });
   }
   res.json(users);
+};
+export const getUser = async (req, res) => {
+  const{ id }= req.params;
+
+  if (!id) {
+    return res.status(400).json({ message: "User ID is required." });
+  }
+  if (!mongoose.Types.ObjectId.isValid(_id))
+  return res.status(400).send({ message: `User ID ${id} not found` });
+  const user = await User.findOne({ _id: id }).exec();
+
+  if (!user) {
+    return res.status(400).json({ message: `User ID ${id} not found` });
+  }
+
+  res.json(user);
 };
 
 export const signin = async (req, res) => {
@@ -44,7 +61,7 @@ export const signin = async (req, res) => {
 };
 
 export const signup = async (req, res) => {
-  const { email, name, level, program, password, confirmPassword } = req.body;
+  const { email, name, level, program, password, confirmPassword, image } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -63,6 +80,7 @@ export const signup = async (req, res) => {
       name,
       level,
       program,
+      image,
     });
 
     const token = jwt.sign({ email: result.email, id: result._id }, secret, {
@@ -83,9 +101,15 @@ export const updateUser = async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(_id))
     return res.status(400).send({ message: `User ID ${id} not found` });
 
-  const updatedUser = await User.findByIdAndUpdate(_id, user, { new: true });
+    const token = jwt.sign(
+      { email: user.email, id: user._id },
+      secret,
+      { expiresIn: "1h" }
+    );
 
-  res.json(updatedUser);
+  const result = await User.findByIdAndUpdate(_id, user, { new: true });
+
+  res.json({result, token});
 };
 
 export const deleteUser = async (req, res) => {
@@ -111,7 +135,7 @@ export const makePayment = async(req, res) => {
 
     const user = await User.findOne({ _id: id }).exec();
  
-    user.transData.push(transData)
+    user.transData.push({...transData,       createdAt: new Date().toISOString(),})
 
   const updatedUser = await User.findByIdAndUpdate(id, user, { new: true });
 

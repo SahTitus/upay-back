@@ -6,12 +6,17 @@ const userSchema = mongoose.Schema({
   program: { type: "String", required: true },
   level: { type: "String", required: true },
   password: { type: "String", required: true },
+  image: String,
   transData: {
     type: [Object],
     level: String,
     amount: String,
     paymentType:  String,
     status: String,
+    createdAt: {
+      type: Date,
+      default: new Date(),
+    },
   },
   id: { type: "String" },
   createdAt: {
