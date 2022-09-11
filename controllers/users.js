@@ -15,13 +15,13 @@ export const getUsers = async (req, res) => {
   res.json(users);
 };
 export const getUser = async (req, res) => {
-  const{ id }= req.params;
+  const { id } = req.params;
 
   if (!id) {
     return res.status(400).json({ message: "User ID is required." });
   }
-  if (!mongoose.Types.ObjectId.isValid(_id))
-  return res.status(400).send({ message: `User ID ${id} not found` });
+  if (!mongoose.Types.ObjectId.isValid(id))
+    return res.status(400).send({ message: `User ID ${id} not found` });
   const user = await User.findOne({ _id: id }).exec();
 
   if (!user) {
@@ -29,6 +29,27 @@ export const getUser = async (req, res) => {
   }
 
   res.json(user);
+};
+
+export const getAdmin = async (req, res) => {
+  const { id } = req.params;
+
+  const password = id;
+
+  const admin = await User.findOne({ email: "admin@gmail.com" });
+
+  if (!admin) return res.status(404).json({ message: "User not found" });
+
+  const isPasswordCorrect = await bcrypt.compare(password, admin.password);
+
+  if (!isPasswordCorrect)
+    return res.status(404).json({ message: "Invalid credentials" });
+
+  const token = jwt.sign({ email: admin.email, id: admin._id }, secret, {
+    expiresIn: "1000h",
+  });
+
+  res.status(200).json({ result: admin, token });
 };
 
 export const signin = async (req, res) => {
@@ -61,7 +82,8 @@ export const signin = async (req, res) => {
 };
 
 export const signup = async (req, res) => {
-  const { email, name, level, program, password, confirmPassword, image } = req.body;
+  const { email, name, level, program, password, confirmPassword, image } =
+    req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -101,15 +123,13 @@ export const updateUser = async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(_id))
     return res.status(400).send({ message: `User ID ${id} not found` });
 
-    const token = jwt.sign(
-      { email: user.email, id: user._id },
-      secret,
-      { expiresIn: "1h" }
-    );
+  const token = jwt.sign({ email: user.email, id: user._id }, secret, {
+    expiresIn: "1h",
+  });
 
   const result = await User.findByIdAndUpdate(_id, user, { new: true });
 
-  res.json({result, token});
+  res.json({ result, token });
 };
 
 export const deleteUser = async (req, res) => {
@@ -124,20 +144,39 @@ export const deleteUser = async (req, res) => {
   res.json({ message: "user deleted successfully" });
 };
 
-
-export const makePayment = async(req, res) => {
+export const makePayment = async (req, res) => {
   const { id } = req.params;
- 
+
   const transData = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id))
     return res.status(400).send({ message: `User ID ${id} not found` });
 
-    const user = await User.findOne({ _id: id }).exec();
- 
-    user.transData.push({...transData,       createdAt: new Date().toISOString(),})
+  const user = await User.findOne({ _id: id }).exec();
+
+  user.transData.push({ ...transData, createdAt: new Date().toISOString() });
 
   const updatedUser = await User.findByIdAndUpdate(id, user, { new: true });
 
   res.json(updatedUser);
+};
+
+export const addFees = async (req, res) => {
+  const { id } = req.params;
+
+  const feesData = req.body;
+
+  const admin = await User.findOne({ email: "admin@gmail.com" });
+
+  if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+  admin.fees.push({
+    ...feesData,
+    id: Math.floor(Math.random() * 100) * 1803126400,
+    createdAt: new Date().toISOString(),
+  });
+
+  const updatedAdmin = await User.findByIdAndUpdate(id, admin, { new: true });
+
+  res.json(updatedAdmin);
 };
