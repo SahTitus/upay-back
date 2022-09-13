@@ -5,6 +5,7 @@ const userSchema = mongoose.Schema({
   name: { type: "String", required: true },
   program: { type: "String", required: true },
   level: { type: String, required: true },
+  indexNo: { type: String, required: true },
   password: { type: "String", required: true },
   image: String,
   transData: {

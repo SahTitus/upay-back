@@ -8,7 +8,6 @@ const secret = "test";
 
 export const getUsers = async (req, res) => {
   const users = await User.find();
-  // console.log(users)
   if (!users) {
     return res.status(204).json({ message: "No user found" });
   }
@@ -82,7 +81,7 @@ export const signin = async (req, res) => {
 };
 
 export const signup = async (req, res) => {
-  const { email, name, level, program, password, confirmPassword, image } =
+  const { email, name, level, program, password, confirmPassword, image, indexNo } =
     req.body;
 
   try {
@@ -103,6 +102,7 @@ export const signup = async (req, res) => {
       level,
       program,
       image,
+      indexNo,
     });
 
     const token = jwt.sign({ email: result.email, id: result._id }, secret, {
@@ -156,9 +156,13 @@ export const makePayment = async (req, res) => {
 
   user.transData.push({ ...transData, createdAt: new Date().toISOString() });
 
-  const updatedUser = await User.findByIdAndUpdate(id, user, { new: true });
+  const token = jwt.sign({ email: transData.email, id: id }, secret, {
+    expiresIn: "1h",
+  });
 
-  res.json(updatedUser);
+  const result = await User.findByIdAndUpdate(id, user, { new: true });
+
+  res.json({ result, token });
 };
 
 export const addFees = async (req, res) => {
